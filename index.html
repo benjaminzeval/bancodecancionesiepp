@@ -1,1 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reproductor de Salmos - IEPP Los Olivos</title>
+    
+    <!-- Fuentes e Iconos -->
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,700;1,400;1,700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+    <style>
+        :root {
+            --iepp-azul: #1B2A56;
+            --iepp-dorado: #B5967B;
+            --iepp-fondo: #FDFBFA;
+            --iepp-borde: #EAE3D9;
+            --text-main: #333333;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: transparent; /* Para que tome el fondo de Carrd */
+            font-family: 'Lora', serif;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+        }
+
+        #iepp-salmos-box {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        /* REPRODUCTOR */
+        .player-container {
+            background: var(--iepp-fondo);
+            border: 1px solid var(--iepp-borde);
+            padding: 35px;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .player-container::after {
+            content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 80px; height: 4px; background: var(--iepp-azul);
+        }
+
+        .label-superior {
+            font-size: 0.75rem; letter-spacing: 4px; color: var(--iepp-dorado);
+            font-weight: 700; display: block; margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        h1#active-title {
+            font-family: 'Bodoni Moda', serif; font-size: 2.2rem;
+            color: var(--iepp-azul); font-style: italic; margin: 0; font-weight: 700;
+        }
+
+        .sede-info { font-style: italic; color: #888; font-size: 0.95rem; margin-top: 5px; }
+
+        .lyrics-window {
+            background: #fff;
+            height: 160px;
+            margin: 25px 0;
+            padding: 20px;
+            overflow-y: auto;
+            border-top: 1px solid #f2f2f2;
+            border-bottom: 1px solid #f2f2f2;
+            font-style: italic;
+            color: #555;
+            line-height: 1.8;
+            border-radius: 4px;
+        }
+
+        /* BARRA PROGRESO */
+        .progress-wrap { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; font-size: 0.75rem; color: #999; }
+        .progress-bg { 
+            flex-grow: 1; height: 6px; background: #eee; cursor: pointer; 
+            position: relative; border-radius: 10px; overflow: hidden;
+        }
+        #progress-fill { position: absolute; height: 100%; background: var(--iepp-dorado); width: 0%; transition: width 0.1s linear; }
+
+        /* CONTROLES */
+        .controls-row { display: flex; justify-content: space-between; align-items: center; }
+        .btn-play-iepp {
+            background: var(--iepp-azul); color: #fff; border: none;
+            padding: 14px 35px; border-radius: 50px; cursor: pointer;
+            font-family: 'Lora', serif; font-weight: 700; letter-spacing: 1.5px; font-size: 0.9rem;
+            transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 10px;
+        }
+        .btn-play-iepp:hover { background: #263b77; transform: scale(1.05); }
+        
+        .playback-main button { background: none; border: none; font-size: 1.5rem; color: #b0b0b0; cursor: pointer; padding: 0 15px; transition: 0.2s; }
+        .playback-main button:hover { color: var(--iepp-azul); }
+
+        #mute-btn { background: none; border: none; color: #777; cursor: pointer; font-size: 1.3rem; }
+
+        /* LISTA */
+        .lista-titulo { font-family: 'Bodoni Moda', serif; color: var(--iepp-azul); margin-bottom: 20px; text-align: left; font-size: 1.8rem; font-style: italic; }
+        .salmos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+
+        .salmo-card {
+            background: #fff; border: 1px solid var(--iepp-borde); padding: 18px 20px 18px 45px;
+            position: relative; cursor: pointer; transition: 0.3s ease; text-align: left;
+            border-radius: 4px;
+        }
+        .salmo-card::before {
+            content: ""; position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
+            width: 8px; height: 8px; background: var(--iepp-dorado); border-radius: 50%;
+        }
+        .salmo-card:hover { border-color: var(--iepp-azul); background: #fdfbfa; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .salmo-card.playing { border-color: var(--iepp-azul); background: #eef2ff; }
+        
+        .card-cat { display: block; font-size: 0.65rem; color: var(--iepp-dorado); font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+        .card-name { font-family: 'Bodoni Moda', serif; font-size: 1.15rem; color: var(--iepp-azul); font-weight: 700; }
+        
+        .item-vacio { opacity: 0.6; filter: grayscale(1); cursor: default; }
+
+        @media screen and (max-width: 600px) {
+            .controls-row { flex-direction: column; gap: 20px; }
+            h1#active-title { font-size: 1.6rem; }
+            .salmos-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="iepp-salmos-box">
+    <!-- REPRODUCTOR -->
+    <div class="player-container">
+        <header>
+            <span class="label-superior">Iglesia Evangélica Presbiteriana del Perú</span>
+            <h1 id="active-title">Colección de Salmos</h1>
+            <p class="sede-info">IEPP Los Olivos</p>
+        </header>
+
+        <div class="lyrics-window">
+            <div id="lyrics-content">
+                <i class="fa-solid fa-music" style="font-size: 2rem; color: #eee; margin-bottom: 10px; display: block;"></i>
+                Selecciona un salmo de la lista para comenzar a escuchar.
+            </div>
+        </div>
+
+        <audio id="salmos-audio"></audio>
+
+        <div class="progress-wrap">
+            <span id="time-now">00:00</span>
+            <div class="progress-bg" id="progress-bar-hit">
+                <div id="progress-fill"></div>
+            </div>
+            <span id="time-end">00:00</span>
+        </div>
+
+        <div class="controls-row">
+            <button id="mute-btn" onclick="toggleMute()"><i class="fa-solid fa-volume-high"></i></button>
+            
+            <div class="playback-main">
+                <button onclick="prevSalmo()"><i class="fa-solid fa-backward-step"></i></button>
+                <button id="master-play" class="btn-play-iepp" onclick="togglePlay()">
+                    <i class="fa-solid fa-play"></i> REPRODUCIR
+                </button>
+                <button onclick="nextSalmo()"><i class="fa-solid fa-forward-step"></i></button>
+            </div>
+            
+            <div style="width:30px"></div>
+        </div>
+    </div>
+
+    <!-- LISTA -->
+    <h2 class="lista-titulo">Salmos Disponibles</h2>
+    <div class="salmos-grid" id="salmos-grid-list"></div>
+</div>
+
+<script>
+    const playlist = [
+        {
+            id: 1,
+            name: "Salmo 5:1-2",
+            url: "https://raw.githubusercontent.com/benjaminzeval/bancodecancionesiepp/5108a6fd3fb09f06ed3ab50b8edd56657ae7e87b/canciones/Salmo%205%201-2.mp3",
+            lyrics: "Escucha, oh Jehová, mis palabras;<br>Considera mi gemir.<br>Está atento a la voz de mi clamor, Rey mío y Dios mío,<br>Porque a ti oraré."
+        },
+        {
+            id: 2,
+            name: "Salmo 5:3",
+            url: "https://raw.githubusercontent.com/benjaminzeval/bancodecancionesiepp/5108a6fd3fb09f06ed3ab50b8edd56657ae7e87b/canciones/Salmo%205%203.mp3",
+            lyrics: "Oh Jehová, de mañana oirás mi voz;<br>De mañana me presentaré delante de ti, y esperaré."
+        }
+    ];
+
+    // Autocompletar hasta 24
+    for(let i = playlist.length + 1; i <= 24; i++) {
+        playlist.push({ id: i, name: `Salmo por Definir ${i}`, url: "", lyrics: "Contenido próximamente." });
+    }
+
+    let currentIndex = -1;
+    const audio = document.getElementById('salmos-audio');
+    const playBtn = document.getElementById('master-play');
+    const progFill = document.getElementById('progress-fill');
+    const lyricsDiv = document.getElementById('lyrics-content');
+    const titleHeader = document.getElementById('active-title');
+
+    function renderList() {
+        const grid = document.getElementById('salmos-grid-list');
+        grid.innerHTML = playlist.map((s, idx) => `
+            <div class="salmo-card ${s.url === "" ? 'item-vacio' : ''}" onclick="selectSalmo(${idx})" id="salmo-item-${idx}">
+                <span class="card-cat">Salmo Cantado</span>
+                <span class="card-name">${s.name}</span>
+            </div>
+        `).join('');
+    }
+
+    window.selectSalmo = (index) => {
+        if (playlist[index].url === "") return;
+        
+        currentIndex = index;
+        const item = playlist[index];
+        audio.src = item.url;
+        titleHeader.innerText = item.name;
+        lyricsDiv.innerHTML = `<strong>${item.name}</strong><br><br>${item.lyrics}`;
+
+        document.querySelectorAll('.salmo-card').forEach(el => el.classList.remove('playing'));
+        document.getElementById(`salmo-item-${index}`).classList.add('playing');
+
+        audio.play();
+        updateBtn(true);
+    };
+
+    window.togglePlay = () => {
+        if(currentIndex === -1) { selectSalmo(0); return; }
+        if(audio.paused) { audio.play(); updateBtn(true); } 
+        else { audio.pause(); updateBtn(false); }
+    };
+
+    function updateBtn(isPlaying) {
+        playBtn.innerHTML = isPlaying ? `<i class="fa-solid fa-pause"></i> PAUSAR` : `<i class="fa-solid fa-play"></i> REPRODUCIR`;
+    }
+
+    window.nextSalmo = () => {
+        let next = (currentIndex + 1) % playlist.length;
+        if(playlist[next].url !== "") selectSalmo(next);
+    };
+
+    window.prevSalmo = () => {
+        let prev = (currentIndex - 1 + playlist.length) % playlist.length;
+        if(playlist[prev].url !== "") selectSalmo(prev);
+    };
+
+    window.toggleMute = () => {
+        audio.muted = !audio.muted;
+        document.getElementById('mute-btn').innerHTML = audio.muted ? 
+        `<i class="fa-solid fa-volume-xmark"></i>` : `<i class="fa-solid fa-volume-high"></i>`;
+    };
+
+    audio.ontimeupdate = () => {
+        if(audio.duration) {
+            const pct = (audio.currentTime / audio.duration) * 100;
+            progFill.style.width = pct + "%";
+            document.getElementById('time-now').innerText = formatT(audio.currentTime);
+            document.getElementById('time-end').innerText = formatT(audio.duration);
+        }
+    };
+
+    function formatT(s) {
+        let m = Math.floor(s / 60); let sec = Math.floor(s % 60);
+        return `${m}:${sec < 10 ? '0'+sec : sec}`;
+    }
+
+    document.getElementById('progress-bar-hit').onclick = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        audio.currentTime = (x / rect.width) * audio.duration;
+    };
+
+    audio.onended = () => nextSalmo();
+
+    renderList();
+</script>
+
+</body>
+</html>
