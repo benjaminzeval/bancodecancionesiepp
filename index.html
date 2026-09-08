@@ -7,20 +7,17 @@
     <!-- SECCIÓN SUPERIOR: REPRODUCIR AHORA -->
     <div class="main-player-card">
         <div class="player-flex">
-            <!-- Miniatura / Carátula -->
             <div class="album-art">
-                <img id="current-art" src="https://images.unsplash.com/photo-1507838596056-a376cf498501?q=80&w=400&auto=format&fit=crop" alt="Salmos">
+                <img id="current-art" src="https://iepresbiterianaperu.com/assets/images/gallery15/0bfe34aa.jpg?v=b4765b49" alt="Salmos">
                 <div class="overlay-playing"><i class="fa-solid fa-volume-high"></i></div>
             </div>
 
-            <!-- Información y Controles -->
             <div class="player-details">
                 <div class="track-info">
                     <h1 id="active-salmo-title">Selecciona un Salmo</h1>
                     <p class="sede-tag">IEPP Los Olivos</p>
                 </div>
 
-                <!-- Barra de Progreso Estilo Referencia -->
                 <div class="progress-wrapper">
                     <span class="time-label" id="current-time">0:00</span>
                     <div class="bar-bg" id="prog-bar-container">
@@ -29,7 +26,6 @@
                     <span class="time-label" id="total-time">0:00</span>
                 </div>
 
-                <!-- Controles Horizontales -->
                 <div class="playback-controls">
                     <div class="nav-btns">
                         <button class="icon-btn" onclick="changeSalmo(-1)"><i class="fa-solid fa-backward-step"></i></button>
@@ -40,15 +36,12 @@
                     </div>
                     
                     <div class="extra-controls">
-                        <button class="icon-btn sm"><i class="fa-solid fa-shuffle"></i></button>
-                        <button class="icon-btn sm"><i class="fa-solid fa-repeat"></i></button>
                         <button class="icon-btn sm" onclick="toggleMute()"><i id="vol-icon" class="fa-solid fa-volume-high"></i></button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Botones de Enlace (Estilo referencia) -->
         <div class="streaming-links">
             <a href="#" class="stream-btn spotify"><i class="fa-brands fa-spotify"></i> Spotify</a>
             <a href="#" class="stream-btn apple"><i class="fa-brands fa-apple"></i> Apple Music</a>
@@ -56,14 +49,24 @@
         </div>
     </div>
 
-    <!-- SECCIÓN INFERIOR: PLAYLIST VERTICAL -->
-    <div class="playlist-container">
-        <div class="lyrics-drawer" id="lyrics-section">
-            <div id="display-lyrics" class="lyrics-text">
-                <p class="hint">La letra del salmo aparecerá aquí al reproducir.</p>
+    <!-- SECCIÓN DE LETRAS (Con controles de tamaño) -->
+    <div class="lyrics-container">
+        <div class="lyrics-header">
+            <span><i class="fa-solid fa-align-left"></i> Letra del Salmo</span>
+            <div class="font-controls">
+                <button onclick="changeFontSize(-2)" title="Reducir letra">A-</button>
+                <button onclick="changeFontSize(2)" title="Aumentar letra">A+</button>
             </div>
         </div>
-        
+        <div class="lyrics-drawer" id="lyrics-section">
+            <div id="display-lyrics" class="lyrics-text">
+                <p class="hint">La letra aparecerá aquí al reproducir.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN INFERIOR: LISTA VERTICAL (CORREGIDA) -->
+    <div class="playlist-container">
         <div id="list-salmos" class="vertical-list">
             <!-- Items generados por JS -->
         </div>
@@ -89,190 +92,117 @@
     background: #fff;
     padding: 20px;
     border-radius: 20px;
+    border: 1px solid var(--border);
 }
 
-/* CARD SUPERIOR */
-.main-player-card {
-    background: var(--bg-card);
-    padding: 10px;
-    margin-bottom: 25px;
-}
+.main-player-card { margin-bottom: 20px; }
 
-.player-flex {
-    display: flex;
-    gap: 25px;
-    align-items: center;
-}
+.player-flex { display: flex; gap: 25px; align-items: center; }
 
 .album-art {
-    position: relative;
-    width: 180px;
-    height: 180px;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    flex-shrink: 0;
+    position: relative; width: 160px; height: 160px;
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1); flex-shrink: 0;
 }
-
 .album-art img { width: 100%; height: 100%; object-fit: cover; }
 
 .player-details { flex-grow: 1; }
-
 .track-info h1 {
     font-family: 'Playfair Display', serif;
-    font-size: 24px;
-    margin: 0;
-    color: var(--primary);
+    font-size: 24px; margin: 0; color: var(--primary);
 }
-
 .sede-tag { color: var(--text-light); font-size: 14px; margin-top: 4px; }
 
-/* BARRA DE PROGRESO */
-.progress-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 20px 0;
-}
-
+/* BARRA PROGRESO */
+.progress-wrapper { display: flex; align-items: center; gap: 10px; margin: 15px 0; }
 .time-label { font-size: 11px; font-weight: 600; color: #999; width: 35px; }
-
-.bar-bg {
-    flex-grow: 1;
-    height: 4px;
-    background: #eee;
-    border-radius: 4px;
-    cursor: pointer;
-    position: relative;
-}
-
-#bar-fill {
-    position: absolute;
-    height: 100%;
-    width: 0%;
-    background: var(--primary);
-    border-radius: 4px;
-}
+.bar-bg { flex-grow: 1; height: 5px; background: #eee; border-radius: 4px; cursor: pointer; position: relative; }
+#bar-fill { position: absolute; height: 100%; width: 0%; background: var(--primary); border-radius: 4px; }
 
 /* CONTROLES */
-.playback-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
+.playback-controls { display: flex; justify-content: space-between; align-items: center; }
 .nav-btns { display: flex; align-items: center; gap: 15px; }
-
 .play-trigger {
-    background: var(--primary);
-    color: white;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
-    font-size: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.2s;
+    background: var(--primary); color: white; width: 48px; height: 48px; 
+    border-radius: 50%; border: none; cursor: pointer; font-size: 18px;
+    display: flex; align-items: center; justify-content: center; transition: 0.2s;
 }
+.play-trigger:hover { transform: scale(1.05); }
+.icon-btn { background: none; border: none; font-size: 20px; color: var(--text-dark); cursor: pointer; }
+.icon-btn.sm { font-size: 18px; color: #999; }
 
-.play-trigger:hover { transform: scale(1.1); }
-
-.icon-btn {
-    background: none;
-    border: none;
-    font-size: 20px;
-    color: var(--text-dark);
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.icon-btn.sm { font-size: 16px; color: #999; }
-.icon-btn:hover { color: var(--accent); }
-
-/* BOTONES DE STREAMING */
-.streaming-links {
-    display: flex;
-    gap: 10px;
-    margin-top: 25px;
-}
-
-.stream-btn {
-    flex: 1;
-    text-decoration: none;
-    padding: 10px;
-    border-radius: 8px;
-    background: #f1f3f5;
-    color: #444;
-    font-size: 12px;
-    font-weight: 700;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: 0.2s;
-}
-
-.stream-btn:hover { background: #e2e6ea; }
-.stream-btn i { font-size: 16px; }
-
-/* LISTA VERTICAL */
-.playlist-container {
-    border-top: 1px solid var(--border);
-    margin-top: 10px;
-}
-
-.lyrics-drawer {
-    background: #f9f9f9;
-    padding: 15px;
+/* --- SECCIÓN DE LETRAS --- */
+.lyrics-container {
+    margin: 20px 0;
+    border: 1px solid #f0f0f0;
     border-radius: 12px;
-    margin: 15px 0;
-    max-height: 100px;
-    overflow-y: auto;
-    font-style: italic;
-    color: var(--text-light);
-    font-size: 13px;
-    line-height: 1.6;
+    overflow: hidden;
+    background: #fafafa;
 }
+.lyrics-header {
+    background: #f1f3f5; padding: 10px 15px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; font-weight: 700; color: var(--primary);
+    border-bottom: 1px solid #eee;
+}
+.font-controls button {
+    background: white; border: 1px solid #ddd; border-radius: 4px;
+    padding: 2px 8px; cursor: pointer; font-size: 12px; margin-left: 4px;
+}
+.font-controls button:hover { background: var(--primary); color: white; }
+
+.lyrics-drawer { padding: 20px; max-height: 200px; overflow-y: auto; text-align: center; }
+.lyrics-text { 
+    font-size: 18px; line-height: 1.6; color: #333; 
+    white-space: pre-line; transition: font-size 0.2s;
+}
+.hint { color: #aaa; font-style: italic; }
+
+/* --- LISTA VERTICAL --- */
+.playlist-container { border-top: 1px solid var(--border); padding-top: 10px; }
 
 .salmo-row {
-    display: flex;
-    align-items: center;
-    padding: 12px;
+    display: flex;         
+    align-items: center;   
+    padding: 12px 15px;
     border-bottom: 1px solid #f9f9f9;
     cursor: pointer;
     transition: 0.2s;
 }
-
 .salmo-row:hover { background: #f8faff; }
 .salmo-row.active { background: #f0f4ff; border-left: 4px solid var(--primary); }
 
 .row-img {
-    width: 45px;
-    height: 45px;
-    border-radius: 6px;
-    margin-right: 15px;
-    background: var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
+    width: 38px; height: 38px; border-radius: 8px;
+    background: var(--accent); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; flex-shrink: 0; margin-right: 15px;
 }
 
-.row-info { flex-grow: 1; }
-.row-info b { display: block; font-size: 14px; color: var(--text-dark); }
+.row-info { 
+    flex-grow: 1; 
+}
+
+.row-info b { display: block; font-size: 15px; color: var(--text-dark); margin-bottom: 2px; }
 .row-info span { font-size: 12px; color: #999; }
-.row-duration { font-size: 12px; color: #bbb; }
+
+.row-duration { 
+    font-size: 13px; color: #aaa; 
+    margin-left: 10px; font-weight: 500;
+}
+
+/* BOTONES STREAMING */
+.streaming-links { display: flex; gap: 10px; margin-top: 15px; }
+.stream-btn {
+    flex: 1; text-decoration: none; padding: 10px; border-radius: 8px;
+    background: #f1f3f5; color: #444; font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
 
 @media (max-width: 600px) {
     .player-flex { flex-direction: column; text-align: center; }
-    .album-art { width: 100%; height: 250px; }
+    .album-art { width: 140px; height: 140px; }
     .streaming-links { flex-direction: column; }
-    .playback-controls { flex-direction: column; gap: 15px; }
 }
 </style>
 
@@ -282,31 +212,34 @@
         {
             name: "Salmo 5:1-2",
             url: "https://raw.githubusercontent.com/benjaminzeval/bancodecancionesiepp/5108a6fd3fb09f06ed3ab50b8edd56657ae7e87b/canciones/Salmo%205%201-2.mp3",
-            lyrics: "//Escucha, escucha oh Jehová, mis palabras; considera mi gemir, está atento a la voz de mi clamor// x2 <br>//Rey mío y Dios mío porque a ti oraré, oh Jehová de mañana oirás mi voz. De mañana me presentaré delante de ti y esperaré.// x2",
+            lyrics: "Escucha, escucha oh Jehová, mis palabras;\nconsidera mi gemir,\nestá atento a la voz de mi clamor.\n\nRey mío y Dios mío porque a ti oraré,\noh Jehová de mañana oirás mi voz.\nDe mañana me presentaré delante de ti\ny esperaré.",
             dur: "2:30"
         },
         {
             name: "Salmo 5:3",
             url: "https://raw.githubusercontent.com/benjaminzeval/bancodecancionesiepp/5108a6fd3fb09f06ed3ab50b8edd56657ae7e87b/canciones/Salmo%205%203.mp3",
-            lyrics: "Oh Jehová, de mañana oirás mi voz...",
+            lyrics: "Oh Jehová, de mañana oirás mi voz.\nDe mañana me presentaré delante de ti,\ny esperaré.",
             dur: "1:45"
+        },
+        {
+            name: "Salmo 16",
+            url: "https://raw.githubusercontent.com/benjaminzeval/bancodecancionesiepp/ff3d7084dd8db04ed72401f871b059296471ead8/canciones/Salmo%2016.mp3",
+            lyrics: "//Guárdame, oh Dios, porque en ti he confiado.\nOh alma mía, dijiste a Jehová:// x2 \n //Tú eres mi Señor;// x2 \nno hay para mí bien fuera de ti.\n //Tú eres mi Señor;// x2 \nno hay para mí bien fuera de ti.\n \nEn tu presencia hay plenitud de gozo\nDelicias a tu diestra para siempre\n//Me mostrarás la senda de la vida\nEn tu presencia hay plenitud de gozo//x2",
+            dur: "3:12"
         }
     ];
 
-    // Rellenar vacíos
-    while(playlist.length < 10) {
-        playlist.push({ name: `Salmo por definir ${playlist.length+1}`, url: "", lyrics: "", dur: "--:--" });
-    }
-
     let currentIndex = -1;
+    let currentFontSize = 18;
     const audio = document.getElementById('main-audio');
     const playBtn = document.getElementById('play-toggle');
     const barFill = document.getElementById('bar-fill');
+    const lyricsDisplay = document.getElementById('display-lyrics');
 
     function init() {
         const listContainer = document.getElementById('list-salmos');
         listContainer.innerHTML = playlist.map((s, idx) => `
-            <div class="salmo-row ${s.url ? '' : 'disabled'}" id="row-${idx}" onclick="selectTrack(${idx})">
+            <div class="salmo-row" id="row-${idx}" onclick="selectTrack(${idx})">
                 <div class="row-img">${idx + 1}</div>
                 <div class="row-info">
                     <b>${s.name}</b>
@@ -317,14 +250,19 @@
         `).join('');
     }
 
+    window.changeFontSize = function(delta) {
+        currentFontSize += delta;
+        if(currentFontSize < 14) currentFontSize = 14;
+        if(currentFontSize > 32) currentFontSize = 32;
+        lyricsDisplay.style.fontSize = currentFontSize + 'px';
+    };
+
     window.selectTrack = function(idx) {
-        if(!playlist[idx].url) return;
         currentIndex = idx;
         const s = playlist[idx];
-        
         audio.src = s.url;
         document.getElementById('active-salmo-title').innerText = s.name;
-        document.getElementById('display-lyrics').innerHTML = s.lyrics || "Cargando alabanza...";
+        lyricsDisplay.innerHTML = s.lyrics || "Cargando alabanza...";
         
         document.querySelectorAll('.salmo-row').forEach(el => el.classList.remove('active'));
         document.getElementById(`row-${idx}`).classList.add('active');
@@ -343,7 +281,7 @@
         let n = currentIndex + dir;
         if(n < 0) n = playlist.length-1;
         if(n >= playlist.length) n = 0;
-        if(playlist[n].url) selectTrack(n);
+        selectTrack(n);
     };
 
     window.toggleMute = function() {
@@ -373,7 +311,6 @@
     };
 
     audio.onended = () => changeSalmo(1);
-    
     init();
 })();
 </script>
