@@ -76,6 +76,18 @@
 </div>
 
 <style>
+/* --- OCULTAR SCROLL BAR GENERAL (Manteniendo scroll funcional) --- */
+html, body {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer y Edge */
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari y Opera */
+    width: 0px;
+    background: transparent;
+}
+
 :root {
     --primary: #1B2A56;
     --accent: #B5967B;
@@ -151,7 +163,13 @@
 }
 .font-controls button:hover { background: var(--primary); color: white; }
 
-.lyrics-drawer { padding: 20px; max-height: 200px; overflow-y: auto; text-align: center; }
+.lyrics-drawer { 
+    padding: 20px; 
+    max-height: 200px; 
+    overflow-y: auto; 
+    text-align: center;
+    scrollbar-width: auto; /* Mantiene la barra de scroll visible en Firefox */
+}
 .lyrics-text { 
     font-size: 18px; line-height: 1.6; color: #333; 
     white-space: pre-line; transition: font-size 0.2s;
