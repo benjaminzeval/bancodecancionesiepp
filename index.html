@@ -1,15 +1,15 @@
-<!-- Fuentes e Iconos -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<!-- FUENTES E ICONOS -->
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,600;0,700;1,600;1,700&family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <div id="salmos-widget-container">
     
-    <!-- SECCIÓN SUPERIOR: REPRODUCIR AHORA -->
+    <!-- SECCIÓN SUPERIOR: REPRODUCIR AHORA (ESTILO EXACTO DE TU IMAGEN) -->
     <div class="main-player-card">
         <div class="player-flex">
             <div class="album-art">
                 <img id="current-art" src="https://iepresbiterianaperu.com/assets/images/gallery15/0bfe34aa.jpg?v=b4765b49" alt="Salmos">
-                <div class="overlay-playing"><i class="fa-solid fa-volume-high"></i></div>
+                <div class="overlay-playing" id="art-overlay-icon"><i class="fa-solid fa-volume-high"></i></div>
             </div>
 
             <div class="player-details">
@@ -48,20 +48,22 @@
             </div>
         </div>
 
-        <div class="streaming-links">
-            <a href="#" class="stream-btn spotify"><i class="fa-brands fa-spotify"></i> Spotify</a>
-            <a href="#" class="stream-btn apple"><i class="fa-brands fa-apple"></i> Apple Music</a>
-            <a href="#" class="stream-btn youtube"><i class="fa-brands fa-youtube"></i> YouTube Music</a>
-        </div>
+        
     </div>
 
-    <!-- SECCIÓN DE LETRAS (Con controles de tamaño) -->
+    <!-- SECCIÓN DE LETRAS CON BOTÓN PROYECTAR -->
     <div class="lyrics-container">
         <div class="lyrics-header">
             <span><i class="fa-solid fa-align-left"></i> Letra del Salmo</span>
-            <div class="font-controls">
-                <button onclick="changeFontSize(-2)" title="Reducir letra">A-</button>
-                <button onclick="changeFontSize(2)" title="Aumentar letra">A+</button>
+            <div class="lyrics-header-actions">
+                <!-- BOTÓN MODO PROYECCIÓN -->
+                <button class="project-btn" onclick="openProjection()" title="Modo Pantalla Completa / Proyección">
+                    <i class="fa-solid fa-expand"></i> Proyectar
+                </button>
+                <div class="font-controls">
+                    <button onclick="changeFontSize(-2)" title="Reducir letra">A-</button>
+                    <button onclick="changeFontSize(2)" title="Aumentar letra">A+</button>
+                </div>
             </div>
         </div>
         <div class="lyrics-drawer" id="lyrics-section">
@@ -71,11 +73,11 @@
         </div>
     </div>
 
-    <!-- SECCIÓN INFERIOR: LISTA VERTICAL CON BUSCADOR -->
+    <!-- SECCIÓN INFERIOR: LISTA CON BUSCADOR POR SALMO Y POR LETRA -->
     <div class="playlist-container">
         <div class="search-wrapper">
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input type="text" id="salmo-search" placeholder="Buscar por número de salmo (ej. 5, 27, 121)..." oninput="handleSearch(this.value)">
+            <input type="text" id="salmo-search" placeholder="Buscar por salmo o palabra de la letra (ej. 5, 27, monte, gloria)..." oninput="handleSearch(this.value)">
             <button id="clear-search-btn" class="clear-btn" onclick="clearSearch()" style="display:none;" title="Limpiar búsqueda">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -86,21 +88,92 @@
     </div>
 
     <audio id="main-audio"></audio>
+
+    <!-- ====================================================
+         MODAL: MODO PANTALLA COMPLETA / PROYECCIÓN
+         (INICIA POR DEFECTO EN MODO DÍA)
+         ==================================================== -->
+    <div id="projection-modal" class="proj-overlay theme-day" style="display: none;">
+        
+        <!-- BOTÓN FLOTANTE PARA RESTAURAR LA BARRA CUANDO ESTÁ OCULTA -->
+        <button id="proj-restore-header-btn" class="proj-floating-trigger" onclick="toggleProjHeader()" title="Mostrar barra superior (Atajo: tecla H)" style="display: none;">
+            <i class="fa-solid fa-eye"></i> <span>Mostrar Barra</span>
+        </button>
+
+        <!-- BARRA SUPERIOR DE PROYECCIÓN -->
+        <div id="proj-header-bar" class="proj-header-bar">
+            <div class="proj-brand-info">
+                <span class="proj-church-tag">IGLESIA EVANGÉLICA PRESBITERIANA DEL PERÚ</span>
+                <span class="proj-mode-label">&bull; MODO PROYECCI&Oacute;N</span>
+            </div>
+            <div class="proj-top-actions">
+                <button class="proj-btn hide-bar-btn" onclick="toggleProjHeader()" title="Ocultar esta barra para una vista limpia (Atajo: tecla H)">
+                    <i class="fa-solid fa-eye-slash"></i> <span>Ocultar Barra</span>
+                </button>
+                <button class="proj-btn" onclick="changeProjFontSize(-4)" title="Reducir letra proyección">A-</button>
+                <button class="proj-btn" onclick="changeProjFontSize(4)" title="Aumentar letra proyección">A+</button>
+                <!-- BOTÓN DE NEGRITA -->
+                <button class="proj-btn" id="proj-bold-btn" onclick="toggleProjBold()" title="Activar / Desactivar Negrita (Atajo: tecla B)">
+                    <i class="fa-solid fa-bold"></i>
+                </button>
+                <button class="proj-btn" onclick="toggleProjTheme()" id="proj-theme-btn" title="Alternar Modo Día / Modo Noche">
+                    <i id="proj-theme-icon" class="fa-solid fa-moon"></i>
+                </button>
+                <button class="proj-btn close-proj" onclick="closeProjection()" title="Cerrar proyección (Escape)"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+        </div>
+
+        <!-- CUERPO CENTRAL: TÍTULO Y LETRA DE PROYECCIÓN -->
+        <div class="proj-content-wrapper">
+            <div class="proj-inner-content">
+                <!-- MARCA DE AGUA LIGERA (LOGO IEPP) -->
+                <div class="proj-watermark"></div>
+
+                <h1 id="proj-title" class="proj-salmo-title">Salmo</h1>
+                
+                <div class="divisor-estilizado-proj">
+                    <div class="linea-proj"></div>
+                    <div class="punto-decorativo-proj"></div>
+                    <div class="linea-proj"></div>
+                </div>
+
+                <div id="proj-lyrics" class="proj-lyrics-body">
+                    Selecciona un salmo para comenzar la proyección.
+                </div>
+            </div>
+        </div>
+
+        <!-- BARRA INFERIOR DE REPRODUCCIÓN EN PANTALLA COMPLETA -->
+        <div class="proj-footer-bar">
+            <div class="proj-controls-box">
+                <button class="proj-icon-btn" onclick="changeSalmo(-1)" title="Salmo Anterior"><i class="fa-solid fa-backward-step"></i></button>
+                <button id="proj-play-toggle" class="proj-play-circle" onclick="handlePlay()" title="Reproducir / Pausar">
+                    <i class="fa-solid fa-play"></i>
+                </button>
+                <button class="proj-icon-btn" onclick="changeSalmo(1)" title="Salmo Siguiente"><i class="fa-solid fa-forward-step"></i></button>
+                <div class="proj-time-indicator">
+                    <span id="proj-curr-time">0:00</span> / <span id="proj-tot-time">0:00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <style>
 /* --- OCULTAR SCROLL BAR GENERAL (Manteniendo scroll funcional) --- */
 html, body {
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* Internet Explorer y Edge */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
-    display: none; /* Chrome, Safari y Opera */
+    display: none;
     width: 0px;
     background: transparent;
 }
 
+/* PALETA EXACTA DEL REPRODUCTOR (SEGÚN TU IMAGEN) */
 :root {
     --primary: #1B2A56;
     --accent: #B5967B;
@@ -108,16 +181,22 @@ body::-webkit-scrollbar {
     --text-dark: #2D3436;
     --text-light: #636E72;
     --border: #ececec;
+
+    /* Proyección Colores */
+    --proj-azul: #101726;
+    --proj-dorado: #a89060;
+    --proj-dorado-soft: #c5b38a;
 }
 
 #salmos-widget-container {
     max-width: 700px;
     margin: 20px auto;
     font-family: 'Inter', sans-serif;
-    background: #fff;
+    background: var(--bg-card);
     padding: 20px;
     border-radius: 20px;
     border: 1px solid var(--border);
+    box-sizing: border-box;
 }
 
 .main-player-card { margin-bottom: 20px; }
@@ -131,10 +210,28 @@ body::-webkit-scrollbar {
 }
 .album-art img { width: 100%; height: 100%; object-fit: cover; }
 
+.overlay-playing {
+    position: absolute;
+    inset: 0;
+    background: rgba(27, 42, 86, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 22px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.overlay-playing.show { opacity: 1; }
+
 .player-details { flex-grow: 1; }
 .track-info h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 24px; margin: 0; color: var(--primary);
+    font-family: 'Bodoni Moda', serif;
+    font-size: 26px; 
+    font-weight: 700;
+    font-style: normal;
+    margin: 0; 
+    color: var(--primary);
 }
 .sede-tag { color: var(--text-light); font-size: 14px; margin-top: 4px; }
 
@@ -187,9 +284,34 @@ body::-webkit-scrollbar {
     font-size: 12px; font-weight: 700; color: var(--primary);
     border-bottom: 1px solid #eee;
 }
+.lyrics-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.project-btn {
+    background: white; 
+    border: 1px solid #ddd; 
+    border-radius: 4px;
+    padding: 2px 9px; 
+    cursor: pointer; 
+    font-size: 11px; 
+    font-weight: 600;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: 0.2s;
+}
+.project-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
 .font-controls button {
     background: white; border: 1px solid #ddd; border-radius: 4px;
-    padding: 2px 8px; cursor: pointer; font-size: 12px; margin-left: 4px;
+    padding: 2px 8px; cursor: pointer; font-size: 12px; margin-left: 2px;
+    color: var(--text-dark);
 }
 .font-controls button:hover { background: var(--primary); color: white; }
 
@@ -198,7 +320,7 @@ body::-webkit-scrollbar {
     max-height: 200px; 
     overflow-y: auto; 
     text-align: center;
-    scrollbar-width: auto; /* Mantiene la barra de scroll visible en Firefox */
+    scrollbar-width: auto;
 }
 .lyrics-text { 
     font-size: 18px; line-height: 1.6; color: #333; 
@@ -206,7 +328,7 @@ body::-webkit-scrollbar {
 }
 .hint { color: #aaa; font-style: italic; }
 
-/* --- BUSCADOR EN TIEMPO REAL --- */
+/* --- BUSCADOR EN TIEMPO REAL (POR SALMO Y POR LETRA) --- */
 .playlist-container { border-top: 1px solid var(--border); padding-top: 15px; }
 
 .search-wrapper {
@@ -259,7 +381,7 @@ body::-webkit-scrollbar {
     font-style: italic;
 }
 
-/* --- LISTA VERTICAL --- */
+/* --- LISTA VERTICAL DE SALMOS --- */
 .salmo-row {
     display: flex;         
     align-items: center;   
@@ -276,12 +398,10 @@ body::-webkit-scrollbar {
     background: var(--accent); color: white;
     display: flex; align-items: center; justify-content: center;
     font-weight: bold; flex-shrink: 0; margin-right: 15px;
+    font-family: 'Inter', sans-serif;
 }
 
-.row-info { 
-    flex-grow: 1; 
-}
-
+.row-info { flex-grow: 1; }
 .row-info b { display: block; font-size: 15px; color: var(--text-dark); margin-bottom: 2px; }
 .row-info span { font-size: 12px; color: #999; }
 
@@ -296,6 +416,383 @@ body::-webkit-scrollbar {
     flex: 1; text-decoration: none; padding: 10px; border-radius: 8px;
     background: #f1f3f5; color: #444; font-size: 11px; font-weight: 700;
     display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: 0.2s;
+}
+.stream-btn:hover {
+    background: #e5e8ec;
+    color: var(--primary);
+}
+
+/* ====================================================
+   ESTILOS: MODO PANTALLA COMPLETA / PROYECCIÓN
+   ==================================================== */
+.proj-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999999;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+    padding: 25px 40px;
+    transition: background 0.3s ease, color 0.3s ease;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.proj-overlay::-webkit-scrollbar {
+    display: none;
+    width: 0px;
+    background: transparent;
+}
+
+/* --- TEMA DÍA (POR DEFECTO EN PROYECCIÓN) --- */
+.proj-overlay.theme-day {
+    background: #FDFBFA;
+    color: #1b2641;
+}
+.proj-overlay.theme-day .proj-header-bar {
+    border-bottom: 1px solid #EAE3D9;
+}
+.proj-overlay.theme-day .proj-church-tag {
+    color: var(--proj-dorado);
+}
+.proj-overlay.theme-day .proj-mode-label {
+    color: #8893a7;
+}
+.proj-overlay.theme-day .proj-btn {
+    background: #ffffff;
+    border: 1px solid #EAE3D9;
+    color: var(--primary);
+}
+.proj-overlay.theme-day .proj-btn:hover {
+    background: var(--proj-dorado);
+    border-color: var(--proj-dorado);
+    color: #ffffff;
+}
+.proj-overlay.theme-day .proj-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #ffffff;
+}
+.proj-overlay.theme-day .proj-salmo-title {
+    color: var(--primary);
+}
+.proj-overlay.theme-day .linea-proj {
+    background: #EAE3D9;
+}
+.proj-overlay.theme-day .punto-decorativo-proj {
+    background: var(--proj-dorado);
+}
+.proj-overlay.theme-day .proj-lyrics-body {
+    color: #2c3e50;
+    text-shadow: none;
+}
+.proj-overlay.theme-day .proj-footer-bar {
+    border-top: 1px solid #EAE3D9;
+}
+.proj-overlay.theme-day .proj-controls-box {
+    background: #f4eee5;
+    border: 1px solid #EAE3D9;
+}
+.proj-overlay.theme-day .proj-icon-btn {
+    color: var(--primary);
+}
+.proj-overlay.theme-day .proj-icon-btn:hover {
+    color: var(--proj-dorado);
+}
+.proj-overlay.theme-day .proj-play-circle {
+    background: var(--primary);
+    color: #ffffff;
+}
+.proj-overlay.theme-day .proj-time-indicator {
+    color: var(--text-light);
+}
+
+/* --- TEMA NOCHE (AL PRESIONAR EL BOTÓN DE TEMA) --- */
+.proj-overlay.theme-night {
+    background: var(--proj-azul);
+    color: #f7f7f7;
+}
+.proj-overlay.theme-night .proj-header-bar {
+    border-bottom: 1px solid rgba(197, 179, 138, 0.2);
+}
+.proj-overlay.theme-night .proj-church-tag {
+    color: var(--proj-dorado-soft);
+}
+.proj-overlay.theme-night .proj-mode-label {
+    color: #8893a7;
+}
+.proj-overlay.theme-night .proj-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #ffffff;
+}
+.proj-overlay.theme-night .proj-btn:hover {
+    background: var(--proj-dorado);
+    border-color: var(--proj-dorado);
+    color: #ffffff;
+}
+.proj-overlay.theme-night .proj-btn.active {
+    background: var(--proj-dorado);
+    border-color: var(--proj-dorado);
+    color: var(--proj-azul);
+}
+.proj-overlay.theme-night .proj-salmo-title {
+    color: var(--proj-dorado-soft);
+}
+.proj-overlay.theme-night .linea-proj {
+    background: rgba(197, 179, 138, 0.35);
+}
+.proj-overlay.theme-night .punto-decorativo-proj {
+    background: var(--proj-dorado);
+}
+.proj-overlay.theme-night .proj-lyrics-body {
+    color: #f1f3f8;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+.proj-overlay.theme-night .proj-footer-bar {
+    border-top: 1px solid rgba(197, 179, 138, 0.2);
+}
+.proj-overlay.theme-night .proj-controls-box {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.proj-overlay.theme-night .proj-icon-btn {
+    color: #d1d5db;
+}
+.proj-overlay.theme-night .proj-icon-btn:hover {
+    color: var(--proj-dorado);
+}
+.proj-overlay.theme-night .proj-play-circle {
+    background: var(--proj-dorado);
+    color: var(--proj-azul);
+}
+.proj-overlay.theme-night .proj-time-indicator {
+    color: #a0aec0;
+}
+
+/* BARRA SUPERIOR */
+.proj-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.proj-brand-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.proj-church-tag {
+    font-family: 'Lora', serif;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    font-weight: 700;
+}
+.proj-mode-label {
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+}
+
+.proj-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.proj-btn {
+    font-family: 'Lora', serif;
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.proj-btn.close-proj {
+    background: #8b2525 !important;
+    border-color: #8b2525 !important;
+    color: #ffffff !important;
+}
+.proj-btn.close-proj:hover {
+    background: #b53232 !important;
+    border-color: #b53232 !important;
+}
+
+/* BOTÓN FLOTANTE DISCRETO PARA RESTAURAR LA BARRA */
+.proj-floating-trigger {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    background: rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    color: inherit;
+    font-family: 'Lora', serif;
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.45;
+    transition: opacity 0.25s ease, background 0.25s ease;
+}
+.proj-overlay.theme-night .proj-floating-trigger {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+.proj-floating-trigger:hover {
+    opacity: 1;
+}
+
+/* CUERPO CENTRAL DE PROYECCIÓN (SCROLL BAR TOTALMENTE OCULTO Y FUNCIONAL) */
+.proj-content-wrapper {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 25px 10px;
+    scrollbar-width: none;        /* Firefox */
+    -ms-overflow-style: none;     /* Edge y IE */
+}
+.proj-content-wrapper::-webkit-scrollbar {
+    display: none;                /* Chrome, Safari y Opera */
+    width: 0px;
+    background: transparent;
+}
+
+.proj-inner-content {
+    max-width: 900px;
+    width: 100%;
+    text-align: center;
+    margin: auto;
+    position: relative; /* Base de posicionamiento para la marca de agua */
+}
+
+/* MARCA DE AGUA LIGERA EN MODO PROYECCIÓN */
+.proj-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 440px;
+    height: 440px;
+    max-width: 85vw;
+    max-height: 70vh;
+    background-image: url('https://iepresbiterianaperu.com/assets/images/image01.png?v=effefaa2');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.07; /* Transparencia muy ligera para tema Día */
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Marca de agua adaptada para tema Noche */
+.proj-overlay.theme-night .proj-watermark {
+    opacity: 0.10;
+}
+
+/* Asegurar que título, divisor y letras queden al frente de la marca de agua */
+.proj-salmo-title,
+.divisor-estilizado-proj,
+.proj-lyrics-body {
+    position: relative;
+    z-index: 1;
+}
+
+.proj-salmo-title {
+    font-family: 'Bodoni Moda', serif;
+    font-size: 2.7rem;
+    font-style: italic;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    line-height: 1.15;
+}
+
+/* DIVISOR ESTILIZADO */
+.divisor-estilizado-proj {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 15px auto 25px auto;
+    max-width: 250px;
+}
+.linea-proj {
+    height: 1px;
+    flex-grow: 1;
+}
+.punto-decorativo-proj {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+
+.proj-lyrics-body {
+    font-family: 'Lora', serif;
+    font-size: 28px;
+    line-height: 1.8;
+    white-space: pre-line;
+    font-style: italic;
+    font-weight: 400;
+    transition: font-size 0.2s ease, font-weight 0.2s ease;
+}
+
+/* CLASE ACTIVA DE NEGRITA EN PROYECCIÓN */
+.proj-lyrics-body.bold-text {
+    font-weight: 700 !important;
+}
+
+/* BARRA INFERIOR DE REPRODUCCIÓN EN PROYECCIÓN */
+.proj-footer-bar {
+    padding-top: 15px;
+    display: flex;
+    justify-content: center;
+}
+.proj-controls-box {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 8px 24px;
+    border-radius: 30px;
+}
+.proj-icon-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.proj-play-circle {
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+.proj-play-circle:hover {
+    transform: scale(1.08);
+}
+.proj-time-indicator {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    margin-left: 8px;
 }
 
 @media (max-width: 600px) {
@@ -303,6 +800,12 @@ body::-webkit-scrollbar {
     .album-art { width: 140px; height: 140px; }
     .streaming-links { flex-direction: column; }
     .nav-btns { gap: 10px; }
+    .proj-overlay { padding: 15px; }
+    .proj-salmo-title { font-size: 1.8rem; }
+    .proj-lyrics-body { font-size: 20px; line-height: 1.6; }
+    .proj-controls-box { gap: 12px; padding: 6px 16px; }
+    .hide-bar-btn span, .proj-floating-trigger span { display: none; }
+    .proj-watermark { width: 260px; height: 260px; }
 }
 </style>
 
@@ -336,7 +839,7 @@ body::-webkit-scrollbar {
         {
             name: "Salmo 19",
             url: "https://raw.githubusercontent.com/benjaminzeval/bancodecancionesiepp/36a819161b03dd1f7d9124a643e13e59700f1c00/canciones/Salmo%2019.mp3",
-            lyrics: "//Que los dichos de mi boca\ny la meditación de mi corazón\nsean gratos delante de ti Oh Jehová.// x2\n\n//Oh Jehová// x4\n\n//Que los dichos de mi boca\ny la meditación de mi corazón\nsean gratos delante de ti Oh Jehová.// x2\n\n//Oh Jehová.// x4" ,
+            lyrics: "//Que los dichos de mi boca\ny la meditación de mi corazón\nsean gratos delante de ti Oh Jehová.// x2\n\n//Oh Jehová// x4\n\n//Que los dichos de mi boca\ny la meditación de mi corazón\nsean gratos delante de ti Oh Jehová.// x2\n\n//Oh Jehová.// x4",
             dur: "1:37"
         },
         {
@@ -457,25 +960,54 @@ body::-webkit-scrollbar {
 
     let currentIndex = -1;
     let currentFontSize = 18;
+    let projFontSize = 28;
     let isShuffle = false;
     let isLoop = false;
+    let isProjBold = false;
     let currentFilter = '';
+    let isHeaderHidden = false;
 
     const audio = document.getElementById('main-audio');
     const playBtn = document.getElementById('play-toggle');
+    const projPlayBtn = document.getElementById('proj-play-toggle');
     const barFill = document.getElementById('bar-fill');
     const lyricsDisplay = document.getElementById('display-lyrics');
+    const artOverlayIcon = document.getElementById('art-overlay-icon');
+
+    // Elementos de Proyección
+    const projModal = document.getElementById('projection-modal');
+    const projHeaderBar = document.getElementById('proj-header-bar');
+    const projRestoreBtn = document.getElementById('proj-restore-header-btn');
+    const projThemeIcon = document.getElementById('proj-theme-icon');
+    const projBoldBtn = document.getElementById('proj-bold-btn');
+    const projTitle = document.getElementById('proj-title');
+    const projLyrics = document.getElementById('proj-lyrics');
+    const projCurrTime = document.getElementById('proj-curr-time');
+    const projTotTime = document.getElementById('proj-tot-time');
+
+    // Quitar acentos/tildes para que la búsqueda sea infalible
+    function normalizeText(text) {
+        return (text || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+    }
 
     function renderList(term = '') {
         const listContainer = document.getElementById('list-salmos');
-        const cleanTerm = term.trim().toLowerCase();
+        const cleanTerm = normalizeText(term.trim());
         
+        // Búsqueda inteligente en título y en toda la letra del salmo
         const filtered = playlist
             .map((s, idx) => ({ ...s, originalIdx: idx }))
-            .filter(s => s.name.toLowerCase().includes(cleanTerm));
+            .filter(s => {
+                const nameNorm = normalizeText(s.name);
+                const lyricsNorm = normalizeText(s.lyrics);
+                return nameNorm.includes(cleanTerm) || lyricsNorm.includes(cleanTerm);
+            });
 
         if (filtered.length === 0) {
-            listContainer.innerHTML = `<div class="no-results">No se encontró ningún salmo que coincida con "${term}".</div>`;
+            listContainer.innerHTML = `<div class="no-results">No se encontró ningún salmo ni letra con "${term}".</div>`;
             return;
         }
 
@@ -529,12 +1061,21 @@ body::-webkit-scrollbar {
         currentIndex = idx;
         const s = playlist[idx];
         audio.src = s.url;
+        
+        // Actualizar reproductor principal
         document.getElementById('active-salmo-title').innerText = s.name;
         lyricsDisplay.innerHTML = s.lyrics || "Cargando alabanza...";
         
+        // Actualizar modal de proyección
+        if(projTitle) projTitle.innerText = s.name;
+        if(projLyrics) projLyrics.innerHTML = s.lyrics || "";
+
         document.querySelectorAll('.salmo-row').forEach(el => el.classList.remove('active'));
         const activeRow = document.getElementById(`row-${idx}`);
-        if(activeRow) activeRow.classList.add('active');
+        if(activeRow) {
+            activeRow.classList.add('active');
+            activeRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
         
         audio.play();
         updateUI(true);
@@ -542,8 +1083,13 @@ body::-webkit-scrollbar {
 
     window.handlePlay = function() {
         if(currentIndex === -1) return selectTrack(0);
-        if(audio.paused) { audio.play(); updateUI(true); } 
-        else { audio.pause(); updateUI(false); }
+        if(audio.paused) { 
+            audio.play(); 
+            updateUI(true); 
+        } else { 
+            audio.pause(); 
+            updateUI(false); 
+        }
     };
 
     window.changeSalmo = function(dir) {
@@ -567,14 +1113,26 @@ body::-webkit-scrollbar {
     };
 
     function updateUI(playing) {
-        playBtn.innerHTML = playing ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
+        const iconHtml = playing ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
+        playBtn.innerHTML = iconHtml;
+        if(projPlayBtn) projPlayBtn.innerHTML = iconHtml;
+        if(artOverlayIcon) {
+            if(playing) artOverlayIcon.classList.add('show');
+            else artOverlayIcon.classList.remove('show');
+        }
     }
 
     audio.ontimeupdate = () => {
         const pct = (audio.currentTime / audio.duration) * 100;
         barFill.style.width = pct + "%";
-        document.getElementById('current-time').innerText = formatTime(audio.currentTime);
-        document.getElementById('total-time').innerText = formatTime(audio.duration || 0);
+        const cTime = formatTime(audio.currentTime);
+        const tTime = formatTime(audio.duration || 0);
+
+        document.getElementById('current-time').innerText = cTime;
+        document.getElementById('total-time').innerText = tTime;
+
+        if(projCurrTime) projCurrTime.innerText = cTime;
+        if(projTotTime) projTotTime.innerText = tTime;
     };
 
     function formatTime(s) {
@@ -595,6 +1153,93 @@ body::-webkit-scrollbar {
             changeSalmo(1);
         }
     };
+
+    /* ====================================================
+       FUNCIONES DEL MODO PROYECCIÓN / PANTALLA COMPLETA
+       ==================================================== */
+    window.openProjection = function() {
+        if(currentIndex === -1) {
+            selectTrack(0);
+        } else {
+            const s = playlist[currentIndex];
+            projTitle.innerText = s.name;
+            projLyrics.innerHTML = s.lyrics || "";
+        }
+        projModal.style.display = 'flex';
+
+        // Pantalla completa nativa del navegador si está soportada
+        if (projModal.requestFullscreen) {
+            projModal.requestFullscreen().catch(() => {});
+        } else if (projModal.webkitRequestFullscreen) {
+            projModal.webkitRequestFullscreen();
+        }
+    };
+
+    window.closeProjection = function() {
+        projModal.style.display = 'none';
+        if (document.fullscreenElement && document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+        }
+    };
+
+    window.changeProjFontSize = function(delta) {
+        projFontSize += delta;
+        if(projFontSize < 18) projFontSize = 18;
+        if(projFontSize > 54) projFontSize = 54;
+        projLyrics.style.fontSize = projFontSize + 'px';
+    };
+
+    // Alternar Negrita en proyección
+    window.toggleProjBold = function() {
+        isProjBold = !isProjBold;
+        if(projLyrics) {
+            projLyrics.classList.toggle('bold-text', isProjBold);
+        }
+        if(projBoldBtn) {
+            projBoldBtn.classList.toggle('active', isProjBold);
+        }
+    };
+
+    // Alternar entre Modo Día y Modo Noche en proyección
+    window.toggleProjTheme = function() {
+        if(projModal.classList.contains('theme-day')) {
+            projModal.classList.remove('theme-day');
+            projModal.classList.add('theme-night');
+            projThemeIcon.className = 'fa-solid fa-sun';
+        } else {
+            projModal.classList.remove('theme-night');
+            projModal.classList.add('theme-day');
+            projThemeIcon.className = 'fa-solid fa-moon';
+        }
+    };
+
+    // Ocultar / Mostrar barra superior de proyección
+    window.toggleProjHeader = function() {
+        isHeaderHidden = !isHeaderHidden;
+        if(isHeaderHidden) {
+            projHeaderBar.style.display = 'none';
+            projRestoreBtn.style.display = 'flex';
+        } else {
+            projHeaderBar.style.display = 'flex';
+            projRestoreBtn.style.display = 'none';
+        }
+    };
+
+    // Atajos de teclado en proyección:
+    // - Tecla Escape: Salir de proyección
+    // - Tecla H: Ocultar o mostrar barra superior
+    // - Tecla B: Alternar Negrita
+    document.addEventListener('keydown', (e) => {
+        if (projModal.style.display === 'flex') {
+            if (e.key === 'Escape') {
+                closeProjection();
+            } else if (e.key === 'h' || e.key === 'H') {
+                toggleProjHeader();
+            } else if (e.key === 'b' || e.key === 'B') {
+                toggleProjBold();
+            }
+        }
+    });
 
     renderList();
 })();
