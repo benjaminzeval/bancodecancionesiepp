@@ -28,15 +28,21 @@
 
                 <div class="playback-controls">
                     <div class="nav-btns">
-                        <button class="icon-btn" onclick="changeSalmo(-1)"><i class="fa-solid fa-backward-step"></i></button>
-                        <button id="play-toggle" class="play-trigger" onclick="handlePlay()">
+                        <button id="shuffle-btn" class="icon-btn sm" onclick="toggleShuffle()" title="Modo aleatorio (Shuffle)">
+                            <i class="fa-solid fa-shuffle"></i>
+                        </button>
+                        <button class="icon-btn" onclick="changeSalmo(-1)" title="Anterior"><i class="fa-solid fa-backward-step"></i></button>
+                        <button id="play-toggle" class="play-trigger" onclick="handlePlay()" title="Reproducir / Pausar">
                             <i class="fa-solid fa-play"></i>
                         </button>
-                        <button class="icon-btn" onclick="changeSalmo(1)"><i class="fa-solid fa-forward-step"></i></button>
+                        <button class="icon-btn" onclick="changeSalmo(1)" title="Siguiente"><i class="fa-solid fa-forward-step"></i></button>
+                        <button id="loop-btn" class="icon-btn sm" onclick="toggleLoop()" title="Repetir salmo (Loop)">
+                            <i class="fa-solid fa-repeat"></i>
+                        </button>
                     </div>
                     
                     <div class="extra-controls">
-                        <button class="icon-btn sm" onclick="toggleMute()"><i id="vol-icon" class="fa-solid fa-volume-high"></i></button>
+                        <button class="icon-btn sm" onclick="toggleMute()" title="Silenciar / Activar sonido"><i id="vol-icon" class="fa-solid fa-volume-high"></i></button>
                     </div>
                 </div>
             </div>
@@ -65,8 +71,15 @@
         </div>
     </div>
 
-    <!-- SECCIÓN INFERIOR: LISTA VERTICAL -->
+    <!-- SECCIÓN INFERIOR: LISTA VERTICAL CON BUSCADOR -->
     <div class="playlist-container">
+        <div class="search-wrapper">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="salmo-search" placeholder="Buscar por número de salmo (ej. 5, 27, 121)..." oninput="handleSearch(this.value)">
+            <button id="clear-search-btn" class="clear-btn" onclick="clearSearch()" style="display:none;" title="Limpiar búsqueda">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
         <div id="list-salmos" class="vertical-list">
             <!-- Items generados por JS -->
         </div>
@@ -133,15 +146,32 @@ body::-webkit-scrollbar {
 
 /* CONTROLES */
 .playback-controls { display: flex; justify-content: space-between; align-items: center; }
-.nav-btns { display: flex; align-items: center; gap: 15px; }
+.nav-btns { display: flex; align-items: center; gap: 14px; }
 .play-trigger {
     background: var(--primary); color: white; width: 48px; height: 48px; 
     border-radius: 50%; border: none; cursor: pointer; font-size: 18px;
     display: flex; align-items: center; justify-content: center; transition: 0.2s;
 }
 .play-trigger:hover { transform: scale(1.05); }
-.icon-btn { background: none; border: none; font-size: 20px; color: var(--text-dark); cursor: pointer; }
-.icon-btn.sm { font-size: 18px; color: #999; }
+.icon-btn { background: none; border: none; font-size: 20px; color: var(--text-dark); cursor: pointer; transition: 0.2s; position: relative; }
+.icon-btn.sm { font-size: 16px; color: #999; }
+.icon-btn:hover { color: var(--primary); }
+
+/* ESTADO ACTIVO PARA SHUFFLE Y LOOP */
+.icon-btn.active {
+    color: var(--primary);
+}
+.icon-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--primary);
+    border-radius: 50%;
+}
 
 /* --- SECCIÓN DE LETRAS --- */
 .lyrics-container {
@@ -176,9 +206,60 @@ body::-webkit-scrollbar {
 }
 .hint { color: #aaa; font-style: italic; }
 
-/* --- LISTA VERTICAL --- */
-.playlist-container { border-top: 1px solid var(--border); padding-top: 10px; }
+/* --- BUSCADOR EN TIEMPO REAL --- */
+.playlist-container { border-top: 1px solid var(--border); padding-top: 15px; }
 
+.search-wrapper {
+    position: relative;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+}
+.search-wrapper input {
+    width: 100%;
+    padding: 10px 36px 10px 38px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    background: #fbfbfb;
+    transition: all 0.2s ease;
+}
+.search-wrapper input:focus {
+    border-color: var(--primary);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(27, 42, 86, 0.08);
+}
+.search-icon {
+    position: absolute;
+    left: 14px;
+    font-size: 14px;
+    color: #aaa;
+    pointer-events: none;
+}
+.clear-btn {
+    position: absolute;
+    right: 8px;
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 6px;
+    border-radius: 50%;
+}
+.clear-btn:hover { color: var(--primary); }
+
+.no-results {
+    text-align: center;
+    padding: 25px 10px;
+    color: #999;
+    font-size: 14px;
+    font-style: italic;
+}
+
+/* --- LISTA VERTICAL --- */
 .salmo-row {
     display: flex;         
     align-items: center;   
@@ -221,6 +302,7 @@ body::-webkit-scrollbar {
     .player-flex { flex-direction: column; text-align: center; }
     .album-art { width: 140px; height: 140px; }
     .streaming-links { flex-direction: column; }
+    .nav-btns { gap: 10px; }
 }
 </style>
 
@@ -375,16 +457,31 @@ body::-webkit-scrollbar {
 
     let currentIndex = -1;
     let currentFontSize = 18;
+    let isShuffle = false;
+    let isLoop = false;
+    let currentFilter = '';
+
     const audio = document.getElementById('main-audio');
     const playBtn = document.getElementById('play-toggle');
     const barFill = document.getElementById('bar-fill');
     const lyricsDisplay = document.getElementById('display-lyrics');
 
-    function init() {
+    function renderList(term = '') {
         const listContainer = document.getElementById('list-salmos');
-        listContainer.innerHTML = playlist.map((s, idx) => `
-            <div class="salmo-row" id="row-${idx}" onclick="selectTrack(${idx})">
-                <div class="row-img">${idx + 1}</div>
+        const cleanTerm = term.trim().toLowerCase();
+        
+        const filtered = playlist
+            .map((s, idx) => ({ ...s, originalIdx: idx }))
+            .filter(s => s.name.toLowerCase().includes(cleanTerm));
+
+        if (filtered.length === 0) {
+            listContainer.innerHTML = `<div class="no-results">No se encontró ningún salmo que coincida con "${term}".</div>`;
+            return;
+        }
+
+        listContainer.innerHTML = filtered.map(s => `
+            <div class="salmo-row ${s.originalIdx === currentIndex ? 'active' : ''}" id="row-${s.originalIdx}" onclick="selectTrack(${s.originalIdx})">
+                <div class="row-img">${s.originalIdx + 1}</div>
                 <div class="row-info">
                     <b>${s.name}</b>
                     <span>IEPP Los Olivos</span>
@@ -393,6 +490,33 @@ body::-webkit-scrollbar {
             </div>
         `).join('');
     }
+
+    window.handleSearch = function(val) {
+        currentFilter = val;
+        const clearBtn = document.getElementById('clear-search-btn');
+        clearBtn.style.display = val ? 'block' : 'none';
+        renderList(val);
+    };
+
+    window.clearSearch = function() {
+        const input = document.getElementById('salmo-search');
+        input.value = '';
+        currentFilter = '';
+        document.getElementById('clear-search-btn').style.display = 'none';
+        renderList('');
+    };
+
+    window.toggleShuffle = function() {
+        isShuffle = !isShuffle;
+        const btn = document.getElementById('shuffle-btn');
+        btn.classList.toggle('active', isShuffle);
+    };
+
+    window.toggleLoop = function() {
+        isLoop = !isLoop;
+        const btn = document.getElementById('loop-btn');
+        btn.classList.toggle('active', isLoop);
+    };
 
     window.changeFontSize = function(delta) {
         currentFontSize += delta;
@@ -409,7 +533,8 @@ body::-webkit-scrollbar {
         lyricsDisplay.innerHTML = s.lyrics || "Cargando alabanza...";
         
         document.querySelectorAll('.salmo-row').forEach(el => el.classList.remove('active'));
-        document.getElementById(`row-${idx}`).classList.add('active');
+        const activeRow = document.getElementById(`row-${idx}`);
+        if(activeRow) activeRow.classList.add('active');
         
         audio.play();
         updateUI(true);
@@ -422,8 +547,16 @@ body::-webkit-scrollbar {
     };
 
     window.changeSalmo = function(dir) {
+        if(isShuffle && playlist.length > 1) {
+            let nextIndex;
+            do {
+                nextIndex = Math.floor(Math.random() * playlist.length);
+            } while (nextIndex === currentIndex);
+            return selectTrack(nextIndex);
+        }
+
         let n = currentIndex + dir;
-        if(n < 0) n = playlist.length-1;
+        if(n < 0) n = playlist.length - 1;
         if(n >= playlist.length) n = 0;
         selectTrack(n);
     };
@@ -454,7 +587,15 @@ body::-webkit-scrollbar {
         audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
     };
 
-    audio.onended = () => changeSalmo(1);
-    init();
+    audio.onended = () => {
+        if(isLoop) {
+            audio.currentTime = 0;
+            audio.play();
+        } else {
+            changeSalmo(1);
+        }
+    };
+
+    renderList();
 })();
 </script>
